@@ -9,6 +9,7 @@ import TableSortLabel from '@mui/material/TableSortLabel';
 import { Order } from '../../types';
 import { OrganizationColumnHeader } from './OrganizationColumnHeader';
 import { RepositoriesColumnHeader } from './RepositoriesColumnHeader';
+import { ReposSelectDrawerColumnHeader } from './ReposSelectDrawerColumnHeader';
 
 export const RepositoriesHeader = ({
   onSelectAllClick,
@@ -18,6 +19,7 @@ export const RepositoriesHeader = ({
   rowCount,
   onRequestSort,
   showOrganizations,
+  isRepoSelectDrawer = false,
 }: {
   numSelected: number;
   onRequestSort: (event: React.MouseEvent<unknown>, property: any) => void;
@@ -26,6 +28,7 @@ export const RepositoriesHeader = ({
   orderBy: string;
   rowCount: number;
   showOrganizations: boolean;
+  isRepoSelectDrawer?: boolean;
 }) => {
   const createSortHandler =
     (property: any) => (event: React.MouseEvent<unknown>) => {
@@ -50,6 +53,8 @@ export const RepositoriesHeader = ({
         )}
         {(showOrganizations
           ? OrganizationColumnHeader
+          : isRepoSelectDrawer
+          ? ReposSelectDrawerColumnHeader
           : RepositoriesColumnHeader
         ).map(headCell => (
           <TableCell

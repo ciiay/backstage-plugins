@@ -1,4 +1,5 @@
 export type RepositoriesData = {
+  id: number;
   name: string;
   repoURL: string;
   organization: string;
@@ -27,4 +28,16 @@ export type AddRepositoriesFormValues = {
   repositories?: AddRepositoriesData[];
   organizations?: AddRepositoriesData[];
   approvalTool: 'git' | 'servicenow';
+};
+
+export type OrganizationData = {
+  id: number;
+  name: string;
+  url: string;
+  repositories: RepositoriesData[];
+  selectedRepositories?: number;
+  catalogInfoYaml: {
+    yaml: string;
+    status: string;
+  };
 };

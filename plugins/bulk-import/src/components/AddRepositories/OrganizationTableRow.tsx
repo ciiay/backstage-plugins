@@ -5,16 +5,20 @@ import { Link } from '@backstage/core-components';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 
-import { AddRepositoriesData } from '../../types';
+import { OrganizationData } from '../../types';
 import {
   getRepositoryStatusForOrg,
   getSelectedRepositories,
 } from '../../utils/repository-utils';
 
 export const OrganizationTableRow = ({
+  onOrgRowSelected,
   data,
+  selectedRepos,
 }: {
-  data: AddRepositoriesData;
+  onOrgRowSelected: (org: OrganizationData) => void;
+  data: OrganizationData;
+  selectedRepos: number[];
 }) => {
   return (
     <TableRow hover>
@@ -25,7 +29,7 @@ export const OrganizationTableRow = ({
         <Link to={data.url}>{data.url}</Link>
       </TableCell>
       <TableCell align="left">
-        <>{getSelectedRepositories(data.selectedRepositories)}</>
+        {getSelectedRepositories(onOrgRowSelected, data, selectedRepos)}
       </TableCell>
       <TableCell align="left">{getRepositoryStatusForOrg(data)}</TableCell>
     </TableRow>

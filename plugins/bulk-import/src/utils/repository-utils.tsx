@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Link } from '@backstage/core-components';
 
+import Button from '@material-ui/core/Button';
 import ReadyIcon from '@mui/icons-material/CheckOutlined';
 import FailedIcon from '@mui/icons-material/CloseOutlined';
 import GeneratingIcon from '@mui/icons-material/HourglassEmptyOutlined';
@@ -11,6 +12,8 @@ import {
   AddRepositoriesData,
   AddRepositoriesFormValues,
   Order,
+  OrganizationData,
+  RepositoriesData,
 } from '../types';
 
 export const getRepositoryStatus = (status: string) => {
@@ -108,23 +111,59 @@ export const createData = (
   };
 };
 
-export const getSelectedRepositories = (repositories: number | undefined) => {
-  if (!repositories || repositories === 0) {
+export const createOrganizationData = (
+  id: number,
+  name: string,
+  url: string,
+  repositories: RepositoriesData[],
+  catalogInfoYaml: {
+    yaml: string;
+    status: string;
+  },
+  selectedRepositories?: number,
+): OrganizationData => {
+  return {
+    id,
+    name,
+    url,
+    repositories,
+    catalogInfoYaml,
+    selectedRepositories,
+  };
+};
+
+export const getSelectedRepositories = (
+  onOrgRowSelected: (org: OrganizationData) => void,
+  organizationData: OrganizationData,
+  selectedRepos: number[],
+) => {
+  const reposOfOrg: RepositoriesData[] =
+    organizationData.repositories?.filter(repo =>
+      selectedRepos.includes(repo.id),
+    ) || [];
+
+  if (!reposOfOrg || reposOfOrg.length === 0) {
     return (
       <>
         None{' '}
-        <Link onClick={() => {}} to="">
+        <Button
+          variant="text"
+          onClick={() => onOrgRowSelected(organizationData)}
+        >
           Select
-        </Link>
+        </Button>
       </>
     );
   }
   return (
     <>
-      {repositories}{' '}
-      <Link onClick={() => {}} to="">
+      {reposOfOrg.length}{' '}
+      <Button
+        variant="text"
+        onClick={() => console.log('repos: ', organizationData.repositories)}
+      >
         Edit
-      </Link>
+      </Button>
     </>
   );
 };

@@ -1,4 +1,7 @@
-import { createData } from '../../utils/repository-utils';
+import {
+  createData,
+  createOrganizationData,
+} from '../../utils/repository-utils';
 
 export const getDataForRepositories = () => [
   createData(
@@ -6,7 +9,7 @@ export const getDataForRepositories = () => [
     'Cupcake',
     'https://github.com/cupcake',
     'Progress',
-    'org/cupcake',
+    'org/desert',
     3,
   ),
   createData(2, 'Donut', 'https://github.com/donut', 'Done', 'org/donut'),
@@ -15,7 +18,7 @@ export const getDataForRepositories = () => [
     'Eclair',
     'https://github.com/eclair',
     'Failed',
-    'org/eclair',
+    'org/desert',
     2,
   ),
   createData(
@@ -23,7 +26,7 @@ export const getDataForRepositories = () => [
     'Frozen yoghurt',
     'https://github.com/yogurt',
     '',
-    'org/yogurt',
+    'org/desert',
     0,
   ),
   createData(
@@ -31,9 +34,138 @@ export const getDataForRepositories = () => [
     'Gingerbread',
     'https://github.com/gingerbread',
     'Exists',
-    'org/gingerbread',
+    'org/desert',
     0,
   ),
-  createData(9, 'KitKat', 'https://github.com/kitkat', '', 'org/kitkat', 0),
-  createData(13, 'Oreo', 'https://github.com/oreo', '', 'org/oreo', 0),
+  createData(9, 'KitKat', 'https://github.com/kitkat', '', 'org/desert', 0),
+  createData(13, 'Oreo', 'https://github.com/oreo', '', 'org/desert', 0),
+  createData(
+    10,
+    'food-app',
+    'https://github.com/food-app',
+    'Progress',
+    'org/pet-store-boston',
+    0,
+  ),
+  createData(
+    11,
+    'online-store',
+    'https://github.com/online-store',
+    'Done',
+    'org/pet-store-boston',
+    0,
+  ),
+  createData(
+    12,
+    'pet-app',
+    'https://github.com/pet-app',
+    'Failed',
+    'org/pet-store-boston',
+    0,
+  ),
+];
+
+export const getDataForOrganizations = () => [
+  createOrganizationData(
+    1,
+    'org/pet-store-boston',
+    'https://github.com/pet-store-boston',
+    [
+      {
+        id: 10,
+        name: 'food-app',
+        repoURL: 'https://github.com/food-app',
+        status: 'Progress',
+        organization: 'org/pet-store-boston',
+        lastUpdated: '',
+      },
+      {
+        id: 11,
+        name: 'online-store',
+        repoURL: 'https://github.com/online-store',
+        status: 'Done',
+        organization: 'org/pet-store-boston',
+        lastUpdated: '',
+      },
+      {
+        id: 12,
+        name: 'pet-app',
+        repoURL: 'https://github.com/pet-app',
+        status: 'Failed',
+        organization: 'org/pet-store-boston',
+        lastUpdated: '',
+      },
+    ],
+    {
+      yaml: '',
+      status: '',
+    },
+  ),
+  createOrganizationData(
+    2,
+    'org/desert',
+    'https://github.com/desert',
+    [
+      {
+        id: 1,
+        name: 'Cupcake',
+        repoURL: 'https://github.com/cupcake',
+        status: 'Progress',
+        organization: 'org/desert',
+        lastUpdated: '',
+      },
+      {
+        id: 2,
+        name: 'Donut',
+        repoURL: 'https://github.com/donut',
+        status: 'Done',
+        organization: 'org/desert',
+        lastUpdated: '',
+      },
+      {
+        id: 3,
+        name: 'Eclair',
+        repoURL: 'https://github.com/eclair',
+        status: 'Failed',
+        organization: 'org/desert',
+        lastUpdated: '',
+      },
+      {
+        id: 4,
+        name: 'Frozen yoghurt',
+        repoURL: 'https://github.com/yogurt',
+        status: '',
+        organization: 'org/desert',
+        lastUpdated: '',
+      },
+      {
+        id: 5,
+        name: 'Gingerbread',
+        repoURL: 'https://github.com/gingerbread',
+        status: 'Exists',
+        organization: 'org/desert',
+        lastUpdated: '',
+      },
+      {
+        id: 9,
+        name: 'KitKat',
+        repoURL: 'https://github.com/kitkat',
+        status: '',
+        organization: 'org/desert',
+        lastUpdated: '',
+      },
+      {
+        id: 13,
+        name: 'Oreo',
+        repoURL: 'https://github.com/oreo',
+        status: '',
+        organization: 'org/desert',
+        lastUpdated: '',
+      },
+    ],
+    {
+      yaml: '',
+      status: '',
+    },
+  ),
 ];

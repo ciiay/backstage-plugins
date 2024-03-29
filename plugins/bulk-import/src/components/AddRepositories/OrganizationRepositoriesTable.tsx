@@ -1,28 +1,16 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 
-import { makeStyles } from '@material-ui/core';
+import { Button, makeStyles } from '@material-ui/core';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import { FormikErrors } from 'formik';
 
-import {
-  AddRepositoriesData,
-  AddRepositoriesFormValues,
-  Order,
-  OrganizationData,
-} from '../../types';
-import {
-  getComparator,
-  getNewSelectedRepositories,
-} from '../../utils/repository-utils';
-import { AddRepositoriesDrawer } from './AddRepositoriesDrawer';
-import { getDataForOrganizations, getDataForRepositories } from './mockData';
-import { OrganizationTableRow } from './OrganizationTableRow';
+import { AddRepositoriesData, Order, OrganizationData } from '../../types';
+import { getComparator } from '../../utils/repository-utils';
 import { RepositoriesColumnHeader } from './RepositoriesColumnHeader';
 import { RepositoriesHeader } from './RepositoriesHeader';
 import { RepositoryTableRow } from './RepositoryTableRow';
@@ -42,59 +30,59 @@ const useStyles = makeStyles(theme => ({
     gap: '20px',
     alignItems: 'center',
   },
+  createButton: {
+    marginRight: theme.spacing(1),
+  },
   footer: {
     '&:nth-of-type(odd)': {
       backgroundColor: `${theme.palette.background.paper}`,
     },
   },
+  sidePanelfooter: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'right',
+    marginTop: theme.spacing(2),
+    position: 'fixed',
+    bottom: '20px',
+    backgroundColor: theme.palette.background.default,
+  },
 }));
 
-export const RepositoriesTable = ({
+export const OrganizationRepositoriesTable = ({
   searchString,
-  selectedRepositoriesFormData,
-  page,
-  setPage,
-  setFieldValue,
-  showOrganizations = false,
+  updateField,
+  closeDrawer,
+  updateSelectedRepos,
+  selectedRepos,
+  activeOrganization,
 }: {
   searchString: string;
-  selectedRepositoriesFormData: AddRepositoriesFormValues;
-  page: number;
-  setPage: (page: number) => void;
-  setFieldValue: (
-    field: string,
-    value: any,
-    shouldValidate?: boolean,
-  ) => Promise<FormikErrors<AddRepositoriesFormValues>> | Promise<void>;
-  showOrganizations?: boolean;
+  updateField: (ids: number[]) => void;
+  closeDrawer: () => void;
+  updateSelectedRepos: (reposID: number[]) => void;
+  selectedRepos: number[];
+  activeOrganization: OrganizationData;
 }) => {
   const classes = useStyles();
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<string>('name');
   const [selected, setSelected] = React.useState<number[]>([]);
-
+  const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [tableData, setTableData] = React.useState<
-    AddRepositoriesData[] | OrganizationData[]
-  >([]);
-  const [isOpen, setIsOpen] = React.useState<boolean>(false);
-  const [activeOrganization, setActiveOrganization] =
-    React.useState<OrganizationData | null>();
 
-  const reposData: AddRepositoriesData[] = getDataForRepositories();
-  const orgsData: OrganizationData[] = getDataForOrganizations();
-
-  useEffect(() => {
-    if (showOrganizations) {
-      setTableData(orgsData);
-    } else {
-      setTableData(reposData);
-    }
-
-    return () => {
-      setTableData([]);
-    };
-  }, [showOrganizations]);
+  const reposData: AddRepositoriesData[] =
+    activeOrganization?.repositories.map(repository => ({
+      id: repository.id,
+      name: repository.name,
+      url: repository.repoURL,
+      organization: repository.organization,
+      selectedRepositories: 0,
+      catalogInfoYaml: {
+        status: repository.status,
+        yaml: '',
+      },
+    })) || [];
 
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
@@ -105,9 +93,20 @@ export const RepositoriesTable = ({
     setOrderBy(property);
   };
 
+  // On click Select from drawer, it update form values with selected repos of active organization from drawer
+  const handleSelecRepoFromDrawer = (selected: number[]) => {
+    updateField(selected);
+    closeDrawer();
+  };
+
+  // when load drawer, set selected rows with checked repos from its parent, the values come from form values
+  useEffect(() => {
+    setSelected(selectedRepos);
+  }, [selectedRepos]);
+
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = filteredData
+      const allReposFromOrg = filteredData
         .map(n => {
           if (n.catalogInfoYaml.status !== 'Exists') {
             return n.id;
@@ -115,26 +114,12 @@ export const RepositoriesTable = ({
           return -1;
         })
         .filter(d => d);
-      setSelected(newSelected);
-      if (selectedRepositoriesFormData.repositoryType === 'repository') {
-        setFieldValue(
-          'repositories',
-          getNewSelectedRepositories(filteredData, newSelected),
-        );
-      } else {
-        setFieldValue(
-          'organizations',
-          getNewSelectedRepositories(filteredData, newSelected),
-        );
-      }
-      return;
-    }
-    if (selectedRepositoriesFormData.repositoryType === 'repository') {
-      setFieldValue('repositories', []);
+      const newSelected = [...new Set([...selected, ...allReposFromOrg])];
+      return setSelected(newSelected), updateSelectedRepos(newSelected);
     } else {
-      setFieldValue('organizations', []);
+      setSelected([]);
+      updateSelectedRepos([]);
     }
-    setSelected([]);
   };
 
   const handleClick = (_event: React.MouseEvent, id: number) => {
@@ -153,14 +138,11 @@ export const RepositoriesTable = ({
         selected.slice(selectedIndex + 1),
       );
     }
-
-    const repositories = getNewSelectedRepositories(reposData, newSelected);
+    // update selected repos id in this drawer
     setSelected(newSelected);
-    if (selectedRepositoriesFormData.repositoryType === 'repository') {
-      setFieldValue('repositories', repositories);
-    } else {
-      setFieldValue('organizations', repositories);
-    }
+
+    // update checked repos of its parent so header selected repos count changes
+    updateSelectedRepos(newSelected);
   };
 
   const handleChangePage = (_event: unknown, newPage: number) => {
@@ -176,24 +158,25 @@ export const RepositoriesTable = ({
 
   const isSelected = (id: number) => selected.indexOf(id) !== -1;
 
-  // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - tableData.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - reposData.length) : 0;
 
   const filteredData = React.useMemo(() => {
-    let repositories = tableData;
+    let filteredRows = reposData;
 
     if (searchString) {
       const f = searchString.toUpperCase();
-      repositories = repositories.filter((addRepoData: AddRepositoriesData) => {
-        const n = addRepoData.name?.toUpperCase();
-        return n?.includes(f);
-      });
+      filteredRows = filteredRows.filter(
+        (addRepoData: AddRepositoriesData | OrganizationData) => {
+          const n = addRepoData.name?.toUpperCase();
+          return n?.includes(f);
+        },
+      );
     }
-    repositories = repositories.sort(getComparator(order, orderBy));
+    filteredRows = [...filteredRows].sort(getComparator(order, orderBy));
 
-    return repositories;
-  }, [tableData, searchString, order, orderBy]);
+    return filteredRows;
+  }, [reposData, searchString, order, orderBy]);
 
   const visibleRows = React.useMemo(() => {
     return filteredData.slice(
@@ -202,62 +185,47 @@ export const RepositoriesTable = ({
     );
   }, [filteredData, page, rowsPerPage]);
 
-  const handleOrgRowSelected = React.useCallback((org: OrganizationData) => {
-    setActiveOrganization(org);
-    setIsOpen(true);
-  }, []);
-
-  const handleClose = React.useCallback(() => {
-    setIsOpen(false), setActiveOrganization(null);
-  }, [setIsOpen]);
-
-  const handleUpdatesFromDrawer = React.useCallback(
-    (drawerSelected: number[]) => {
-      if (drawerSelected) {
-        setSelected(drawerSelected);
-        setFieldValue(
-          'repositories',
-          getNewSelectedRepositories(reposData, drawerSelected),
-        );
-      }
-    },
-    [selectedRepositoriesFormData],
-  );
+  const selectedForActiveDrawer = React.useMemo(() => {
+    return selected
+      .filter(id => id > -1)
+      .filter(
+        id => activeOrganization?.repositories.map(r => r.id).includes(id),
+      );
+  }, [selected, reposData]);
 
   return (
     <>
       <TableContainer>
         <Table
           sx={{ minWidth: 750 }}
-          aria-labelledby="repositories-table"
+          aria-labelledby="drawer-repositories-table"
           size="medium"
         >
           <RepositoriesHeader
-            numSelected={selected.length}
+            numSelected={selectedForActiveDrawer.length}
             order={order}
             orderBy={orderBy}
             onSelectAllClick={handleSelectAllClick}
             onRequestSort={handleRequestSort}
-            rowCount={tableData.length}
-            showOrganizations={showOrganizations}
+            rowCount={
+              reposData.filter(r => r.catalogInfoYaml.status !== 'Exists')
+                .length
+            }
+            showOrganizations={false}
+            isRepoSelectDrawer
           />
           {visibleRows?.length > 0 ? (
             <TableBody>
               {visibleRows.map(row => {
                 const isItemSelected = isSelected(row.id);
-
-                return showOrganizations ? (
-                  <OrganizationTableRow
-                    onOrgRowSelected={handleOrgRowSelected}
-                    data={row as OrganizationData}
-                    selectedRepos={selected}
-                  />
-                ) : (
+                return (
                   <RepositoryTableRow
+                    key={row.id}
                     handleClick={handleClick}
                     isItemSelected={isItemSelected}
                     data={row}
                     selectedRepositoryStatus={row.catalogInfoYaml.status}
+                    isDrawer
                   />
                 );
               })}
@@ -294,24 +262,35 @@ export const RepositoriesTable = ({
           { value: 15, label: '15 rows' },
         ]}
         component="div"
-        count={tableData.length}
+        count={reposData.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
         labelRowsPerPage={null}
       />
-      {showOrganizations && (
-        <AddRepositoriesDrawer
-          title="Selected repositories"
-          data={activeOrganization as OrganizationData}
-          onSelect={handleUpdatesFromDrawer}
-          open={isOpen}
-          onClose={handleClose}
-          selectedRepositoriesFormData={selectedRepositoriesFormData}
-          checkedRepos={selected}
-        />
-      )}
+      <div className={classes.sidePanelfooter}>
+        <span>
+          <Button
+            variant="contained"
+            onClick={() => handleSelecRepoFromDrawer(selected)}
+            className={classes.createButton}
+            disabled={selected.length === 0}
+            aria-labelledby="select-from-drawer"
+          >
+            Select
+          </Button>
+        </span>
+        <span>
+          <Button
+            aria-labelledby="cancel-drawer-select"
+            variant="outlined"
+            onClick={closeDrawer}
+          >
+            Cancel
+          </Button>
+        </span>
+      </div>
     </>
   );
 };

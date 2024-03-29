@@ -14,11 +14,13 @@ export const RepositoryTableRow = ({
   isItemSelected,
   data,
   selectedRepositoryStatus,
+  isDrawer = false,
 }: {
   handleClick: (_event: React.MouseEvent, id: number) => void;
   isItemSelected: boolean;
   data: AddRepositoriesData;
   selectedRepositoryStatus: string;
+  isDrawer?: boolean;
 }) => {
   return (
     <TableRow
@@ -43,11 +45,13 @@ export const RepositoryTableRow = ({
         {data.name}
       </TableCell>
       <TableCell align="left">
-        <Link to={data.url}>{data.url}</Link>
+        <Link to={data.url || '#'}>{data.url || 'No URL Provided'}</Link>
       </TableCell>
-      <TableCell align="left">
-        <Link to={data.organization || ''}>{data.organization}</Link>
-      </TableCell>
+      {!isDrawer && data.organization && (
+        <TableCell align="left">
+          <Link to={data.organization || ''}>{data.organization}</Link>
+        </TableCell>
+      )}
       <TableCell align="left">
         {getRepositoryStatus(data.catalogInfoYaml.status)}
       </TableCell>
